@@ -3,3 +3,4 @@
 #git merge --no-ff
 #git merge --no-ff
 #fix bug 101
+#git stash
