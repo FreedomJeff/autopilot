@@ -5,3 +5,4 @@
 #fix bug 101
 #git stash
 #git push origin dev
+#git branch --set-upstream=origin/dev local-branch
