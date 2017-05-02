@@ -4,3 +4,4 @@
 #git merge --no-ff
 #fix bug 101
 #git stash
+#git push origin dev
