@@ -1,0 +1,239 @@
+git log --pretty=oneline
+版本回退：
+git reset --hard commit-id//git reflog查看修改记录
+HEAD指向当前版本，HEAD^,HEAD^^//HEAD~1,HEAD~2
+工作区和暂存区：
+工作区有个隐藏的目录.git，不是工作区而是版本库.
+Git的版本库里存了很多东西，其中最重要的就是称为stage（或者叫index）的暂存区，
+还有Git为我们自动创建的第一个分支master，
+以及指向master的一个指针叫HEAD
+git add xxx//把文件修改放到暂存区
+git commit -m "xx"//把暂存区内容提交到当前分支
+
+git 跟踪管理的是修改而非文件
+git diff HEAD -- file.txt//查看file.txt在工作区和版本库中最新版本的差别
+
+git checkout --
+file//丢弃文件在工作区的修改//本质上是用版本库中的文件替代工作区的
+文件
+git reset HEAD -- file//丢弃暂存区的修改，修改回到工作区//use "git rm --cached
+<file>..." to unstage
+git reset --hard HEAD//回退版本库的修改 ，前提是没有提交到远程分支
+
+git rm file删除文件
+git checkout --
+file还原被删除的文件，前提是该文件已提交在版本库中，本质上是用版本库
+中的文件替换工作区的
+
+
+
+远程仓库：
+Git是分布式版本控制系统，同一个Git仓库，可以分布到不同的机器上。
+实际情况往往是这样，找一台电脑充当服务器的角色，每天24小时开机，
+其他每个人都从这个“服务器”仓库克隆一份到自己的电脑上，
+并且各自把各自的提交推送到服务器仓库里，也从服务器仓库中拉取别人的提交。
+
+为什么GitHub需要SSH
+Key呢？因为GitHub需要识别出你推送的提交确实是你推送的，而不是别人冒充的，
+而Git支持SSH协议，所以，GitHub只要知道了你的公钥，就可以确认只有你自己才能推送。
+本地Git仓库和GitHub仓库之间的传输是通过SSH加密
+ssh-keygen -t rsa -C "haonan0809@163.com"
+为什么GitHub需要SSH
+Key呢？因为GitHub需要识别出你推送的提交确实是你推送的，而不是别人冒充的，
+而Git支持SSH协议，所以，GitHub只要知道了你的公钥，就可以确认只有你自己才能推送。
+/////////////////
+…or create a new repository on the command line
+
+echo "# autopilot" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/FreedomJeff/autopilot.git
+git push -u origin master
+
+…or push an existing repository from the command line
+
+git remote add origin https://github.com/FreedomJeff/autopilot.git
+git push -u origin master
+///////////////////////
+
+
+分支管理
+master指针指向分支，HEAD指向master
+git checkout -b
+dev//创建dev分支，git新建了一个指针叫dev，指向master相同的提交，再把HEAD指向dev，就表示当前分支在dev
+在dev分支上修改并提交
+
+-b参数表示创建并切换//等效：git branch dev ,git checkout dev
+git chekcout
+master//切换回master指针，此时Head又指向master指针，master指针和dev指针指向不同的地方.
+git merge
+dev//将dev分支桑的条件合到当前所在分支，fast-forward模式（直接将master指针指向dev分支最新提交）
+git branch -d dev//删除dev分支
+合并某分支到当前分支：git merge <name>
+解决冲突：
+git status也可以告诉我们冲突的文件
+<<<<<<< HEAD
+Creating a new branch is quick & simple.
+=======
+Creating a new branch is quick AND simple.
+>>>>>>> feature1
+Git用<<<<<<<，=======，>>>>>>>标记出不同分支的内容，我们修改如下后保存
+修改冲突后执行git add file,git commit -m "msg“重新提交
+用带参数的git log也可以看到分支的合并情况： git log --graph --pretty=oneline
+--abbrev-commit
+
+合并分支时，加上--no-ff参数就可以用普通模式合并，合并后的历史有分支，能看出来曾经做过合并，而fast
+forward合并就看不出来曾经做过合并
+git merge --no-ff -m "msg" dev
+
+hanhaonan@hanhaonan-VirtualBox:~/work/learngit$ git merge dev
+Updating fe88fe1..e5ee5f4
+Fast-forward
+	READMe.md | 1 +
+1 file changed, 1 insertion(+)
+	hanhaonan@hanhaonan-VirtualBox:~/work/learngit$ git log --pretty=oneline
+	--graph --abbrev-commit
+	* e5ee5f4 git merge
+	* fe88fe1 date
+	* f2cc8dc drive
+	* fc61aab driver
+	* ece2ff5 readme
+
+	hanhaonan@hanhaonan-VirtualBox:~/work/learngit$ git merge --no-ff -m
+	"--no-ff" dev
+	Merge made by the 'recursive' strategy.
+	READMe.md | 1 +
+1 file changed, 1 insertion(+)
+	hanhaonan@hanhaonan-VirtualBox:~/work/learngit$ git log --pretty=oneline
+	--graph --abbrev-commit
+	*   9e3fd64 --no-ff
+	|\  
+	| * 70d9007 git merge --no-ff
+	|/  
+	* e5ee5f4 git merge
+	* fe88fe1 date
+	* f2cc8dc drive
+	* fc61aab driver
+	* ece2ff5 readme
+	============================================================================================================
+
+	bug分支管理：
+	当你接到一个修复一个代号101的bug的任务时，很自然地，你想创建一个分支issue-101来修复它，但是，等等，当前正在dev上进行的工作还没有提交：
+	git status 
+	git提供了一个stash功能，可以把当前工作现场“储存”起来，等以后恢复现场继续工作
+	修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；
+
+	当手头工作没有完成时，先把工作现场git
+	stash一下，然后去修复bug，修复后，再git stash pop，回到工作现场
+	工作现场还在，Git把stash内容存在某个地方了，但是需要恢复一下，有两个办法：
+
+	一是用git stash apply恢复，但是恢复后，stash内容并不删除，你需要用git stash
+	drop来删除；
+
+	另一种方式是用git stash pop，恢复的同时把stash内容也删了：
+	=========================================================================================================================
+
+	feature分支管理：
+	如果要丢弃一个没有被合并过的分支，可以通过git branch -D <name>强行删除。
+	===============================================
+	多人协作：
+
+	因此，多人协作的工作模式通常是这样：
+
+	首先，可以试图用git push origin branch-name推送自己的修改；
+
+	如果推送失败，则因为远程分支比你的本地更新，需要先用git
+	pull试图合并；
+
+	如果合并有冲突，则解决冲突，并在本地提交；
+
+	没有冲突或者解决掉冲突后，再用git push origin
+	branch-name推送就能成功！
+
+	如果git pull提示“no tracking
+	information”，则说明本地分支和远程分支的链接关系没有创建，
+	用命令git branch --set-upstream branch-name
+	origin/branch-name。
+
+	这就是多人协作的工作模式，一旦熟悉了，就非常简单。
+	小结
+
+	查看远程库信息，使用git remote -v；
+
+	本地新建的分支如果不推送到远程，对其他人就是不可见的；
+
+	从本地推送分支，使用git push origin
+	branch-name，如果推送失败，先用git
+	pull抓取远程的新提交；
+
+	在本地创建和远程分支对应的分支，使用git
+	checkout -b branch-name
+	origin/branch-name，本地和远程分支的名称最好一致；
+
+	建立本地分支和远程分支的关联，使用git
+	branch --set-upstream branch-name
+	origin/branch-name；
+
+	从远程抓取分支，使用git
+	pull，如果有冲突，要先处理冲突
+
+
+	现在，你的小伙伴要在dev分支上开发，就必须创建远程origin的dev分支到本地，于是他用这个命令创建本地dev分支：
+	$ git checkout -b dev
+	origin/dev
+	or：git checkout
+	origin/dev -v dev
+	现在，他就可以在dev上继续修改，然后，时不时地把dev分支push到远程
+	dev -> dev
+
+
+	=============================================================================================================================
+	git config
+	--global
+	color.ui
+	true
+	--global参数是全局参数，也就是这些命令在这台电脑的所有Git仓库下都有用。
+
+	在撤销修改一节中，我们知道，命令git
+	reset HEAD
+	file可以把暂存区的修改撤销掉（unstage），
+	重新放回工作区。既然是一个unstage操作，就可以配置一个unstage别名：
+	git config
+	--global
+	alias.unstage
+	'reset HEAD'
+
+	git config
+	--global
+	alias.st
+	status//git
+	st
+
+	git config
+	--global
+	alias.lg 
+	"log --color
+	--graph
+	--pretty=format:'%Cred%h%Creset
+	-%C(yellow)%d%Creset
+	%s
+%%Cgreen(%cr)
+	%%C(bold blue)<%an>%Creset' --abbrev-commit
+	//git lg
+
+	git 配置文件：
+	git仓配置文件：.git/config
+	git全局配置文件：~/.gitconfig
+	============================================
+	git服务器：
+	要方便管理公钥，用Gitosis；
+	要像SVN那样变态地控制权限，用Gitolite。
+
+
+
+
+
+
+
+
